@@ -17,55 +17,20 @@
 
 package org.knowhowlab.osgi.niis;
 
-import org.knowhowlab.osgi.niis.registry.IPRegistry;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-
-import java.net.NetworkInterface;
-import java.util.Collections;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import static java.lang.Long.parseLong;
-import static java.util.Optional.ofNullable;
-import static org.knowhowlab.osgi.niis.utils.Functions.ofThrowable;
 
 /**
  * @author dpishchukhin
  */
 public class Activator implements BundleActivator {
-    private static final String REFRESH_DELAY_PROPERTY = "org.knowhowlab.osgi.niis.refresh_delay";
-
-    private static final String REFRESH_DELAY_DEFAULT = String.valueOf(TimeUnit.SECONDS.toMillis(5));
-
-    private ScheduledExecutorService pool;
-
-    private NetworkServicesRegistrationManager registrationManager;
-
     @Override
-    public void start(BundleContext bc) throws Exception {
-        registrationManager = new NetworkServicesRegistrationManager(bc::registerService, bc::registerService, IPRegistry.rfc6890());
-
-        // read props
-        long refreshDelay = parseLong(ofNullable(bc.getProperty(REFRESH_DELAY_PROPERTY)).orElse(REFRESH_DELAY_DEFAULT));
-
-        pool = Executors.newScheduledThreadPool(0);
-        pool.scheduleWithFixedDelay(new NetworkMonitor(), 0, refreshDelay, TimeUnit.MILLISECONDS);
+    public void start(BundleContext bundleContext) throws Exception {
+        // todo
     }
 
     @Override
-    public void stop(BundleContext bc) throws Exception {
-        pool.shutdownNow();
-        registrationManager.close();
-    }
-
-    private class NetworkMonitor implements Runnable {
-        @Override
-        public void run() {
-            registrationManager.updateServices(Collections
-                .list(ofThrowable(NetworkInterface::getNetworkInterfaces)
-                .orElseGet(Collections::emptyEnumeration)));
-        }
+    public void stop(BundleContext bundleContext) throws Exception {
+        // todo
     }
 }
