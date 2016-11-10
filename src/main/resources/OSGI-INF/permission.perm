@@ -1,0 +1,7 @@
+# Network Interface Information Service permissions
+# OSGi core packages import
+(org.osgi.framework.PackagePermission "org.osgi.framework" "IMPORT")
+# MonitorAdmin permissions
+(org.osgi.framework.ServicePermission "org.osgi.service.networkadapter.NetworkAdapter" "REGISTER")
+(org.osgi.framework.ServicePermission "org.osgi.service.networkadapter.NetworkAddress" "REGISTER")
+(org.osgi.framework.PackagePermission "org.osgi.service.networkadapter" "IMPORT,EXPORTONLY")
