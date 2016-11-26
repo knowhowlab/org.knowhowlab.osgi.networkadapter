@@ -24,6 +24,9 @@ import java.util.Map;
  * @author dpishchukhin
  */
 public class CompareUtils {
+    private CompareUtils() {
+    }
+
     public static boolean deepEquals(Map<String, Object> m1, Map<String, Object> m2) {
         if (m2 == m1)
             return true;

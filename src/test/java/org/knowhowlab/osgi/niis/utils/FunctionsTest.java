@@ -29,40 +29,15 @@ import static org.hamcrest.CoreMatchers.is;
  */
 public class FunctionsTest {
     @Test
-    public void ofThrowable_supplier_noError() throws Exception {
+    public void ofThrowable_noError() throws Exception {
         Assert.assertThat(Functions.ofThrowable(() -> "test"), is(Optional.of("test")));
     }
 
     @Test
-    public void ofThrowable_supplier_withError() throws Exception {
+    public void ofThrowable_withError() throws Exception {
         Assert.assertThat(Functions.ofThrowable(() -> {
             throw new Exception("Error");
         }), is(Optional.empty()));
-    }
 
-    @Test
-    public void ofThrowable_function_noError() throws Exception {
-        Assert.assertThat(Functions.ofThrowable(String::valueOf, () -> true), is(Optional.of("true")));
-    }
-
-    @Test
-    public void ofThrowable_function_withError() throws Exception {
-        Assert.assertThat(Functions.ofThrowable(t -> {
-            throw new Exception("Error");
-        }, () -> true), is(Optional.empty()));
-    }
-
-    @Test
-    public void cast_noError() throws Exception {
-        Assert.assertThat(Functions.cast(Boolean.class::cast, true), is(Optional.of(true)));
-        Assert.assertThat(Functions.cast(String.class::cast, "test"), is(Optional.of("test")));
-        //noinspection OptionalGetWithoutIsPresent
-        Assert.assertArrayEquals(Functions.cast(byte[].class::cast, new byte[] {1, 2}).get(),
-            new byte[] {1, 2});
-    }
-
-    @Test
-    public void cast_withError() throws Exception {
-        Assert.assertThat(Functions.cast(Boolean.class::cast, 1), is(Optional.empty()));
     }
 }

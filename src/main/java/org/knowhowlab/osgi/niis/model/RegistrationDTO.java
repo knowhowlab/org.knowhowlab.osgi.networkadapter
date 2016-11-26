@@ -15,11 +15,24 @@
  *
  */
 
-package org.knowhowlab.osgi.niis.utils;
+package org.knowhowlab.osgi.niis.model;
+
+import org.osgi.dto.DTO;
+import org.osgi.framework.ServiceRegistration;
+
+import java.util.Hashtable;
 
 /**
  * @author dpishchukhin
  */
-public class RegistrationManagerTest {
+public class RegistrationDTO<T> extends DTO {
+    public final T instance;
+    public final ServiceRegistration<T> serviceRegistration;
+    public final Hashtable<String, Object> properties;
 
+    public RegistrationDTO(T instance, ServiceRegistration<T> serviceRegistration, Hashtable<String, Object> properties) {
+        this.instance = instance;
+        this.serviceRegistration = serviceRegistration;
+        this.properties = properties;
+    }
 }
