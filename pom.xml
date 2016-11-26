@@ -4,7 +4,7 @@
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
+  ~ You may obtain a copy ofThrowable the License at
   ~
   ~         http://www.apache.org/licenses/LICENSE-2.0
   ~
@@ -84,6 +84,12 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>2.2.25</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -120,14 +126,11 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
+                        <Export-Package/>
                         <Import-Package>*</Import-Package>
                         <Private-Package>org.knowhowlab.osgi.niis.*</Private-Package>
                         <Bundle-Activator>org.knowhowlab.osgi.niis.Activator</Bundle-Activator>
                         <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
-                        <Bundle-RequiredExecutionEnvironment>JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
-                        <_removeheaders>
-                            Bnd-LastModified, Built-By, Private-Package, Tool, Build-Jdk, Include-Resource
-                        </_removeheaders>
                     </instructions>
                 </configuration>
             </plugin>
@@ -160,7 +163,7 @@
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
-                    <version>2.5.4</version>
+                    <version>3.2.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

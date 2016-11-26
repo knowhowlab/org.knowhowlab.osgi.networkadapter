@@ -15,26 +15,31 @@
  *
  */
 
-package org.knowhowlab.osgi.niis;
+package org.knowhowlab.osgi.niis.impl;
 
 import org.osgi.service.networkadapter.NetworkAdapter;
 
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.function.Supplier;
+
+import static org.knowhowlab.osgi.niis.utils.Functions.ofThrowable;
 
 /**
  * @author dpishchukhin
  */
-class NetworkAdapterImpl implements NetworkAdapter {
+public class NetworkAdapterImpl implements NetworkAdapter {
     private NetworkInterface networkInterface;
+    private Supplier<String> typeSupplier;
 
-    NetworkAdapterImpl(NetworkInterface networkInterface) {
+    public NetworkAdapterImpl(NetworkInterface networkInterface, Supplier<String> typeSupplier) {
         this.networkInterface = networkInterface;
+        this.typeSupplier = typeSupplier;
     }
 
     @Override
     public String getNetworkAdapterType() {
-        return null;
+        return typeSupplier.get();
     }
 
     @Override
@@ -49,11 +54,7 @@ class NetworkAdapterImpl implements NetworkAdapter {
 
     @Override
     public byte[] getHardwareAddress() {
-        try {
-            return networkInterface.getHardwareAddress();
-        } catch (SocketException e) {
-            return EMPTY_BYTE_ARRAY;
-        }
+        return ofThrowable(networkInterface::getHardwareAddress).orElse(EMPTY_BYTE_ARRAY);
     }
 
     @Override
