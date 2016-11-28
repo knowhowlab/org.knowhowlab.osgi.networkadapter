@@ -15,24 +15,21 @@
  *
  */
 
-package org.knowhowlab.osgi.niis.model;
+package org.knowhowlab.osgi.niis.impl;
 
-import org.osgi.dto.DTO;
-import org.osgi.framework.ServiceRegistration;
-
-import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * @author dpishchukhin
  */
-public class RegistrationDTO<T> extends DTO {
-    public final T instance;
-    public final ServiceRegistration<T> serviceRegistration;
-    public final Hashtable<String, Object> properties;
+public abstract class AbstractInstance<T> {
+    protected T source;
+    protected Map<String, Object> properties;
 
-    public RegistrationDTO(T instance, ServiceRegistration<T> serviceRegistration, Hashtable<String, Object> properties) {
-        this.instance = instance;
-        this.serviceRegistration = serviceRegistration;
+    public AbstractInstance(T source, Map<String, Object> properties) {
+        this.source = source;
         this.properties = properties;
     }
+
+    public abstract String getId();
 }

@@ -21,69 +21,79 @@ import org.osgi.service.networkadapter.NetworkAdapter;
 
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.function.Supplier;
+import java.util.Map;
 
-import static org.knowhowlab.osgi.niis.utils.Functions.ofThrowable;
+import static org.knowhowlab.osgi.niis.utils.Functions.cast;
 
 /**
  * @author dpishchukhin
  */
-public class NetworkAdapterImpl implements NetworkAdapter {
-    private NetworkInterface networkInterface;
-    private Supplier<String> typeSupplier;
+public class NetworkAdapterImpl extends AbstractInstance<NetworkInterface> implements NetworkAdapter {
+    public NetworkAdapterImpl(NetworkInterface networkInterface, Map<String, Object> properties) {
+        super(networkInterface, properties);
+    }
 
-    public NetworkAdapterImpl(NetworkInterface networkInterface, Supplier<String> typeSupplier) {
-        this.networkInterface = networkInterface;
-        this.typeSupplier = typeSupplier;
+    @Override
+    public String getId() {
+        return getName();
     }
 
     @Override
     public String getNetworkAdapterType() {
-        return typeSupplier.get();
+        return cast(String.class::cast, properties.get(NETWORKADAPTER_TYPE))
+            .orElse(EMPTY_STRING);
     }
 
     @Override
     public String getDisplayName() {
-        return networkInterface.getDisplayName();
+        return cast(String.class::cast, properties.get(NETWORKADAPTER_DISPLAYNAME))
+            .orElse(NetworkAdapter.EMPTY_STRING);
     }
 
     @Override
     public String getName() {
-        return networkInterface.getName();
+        return cast(String.class::cast, properties.get(NETWORKADAPTER_NAME))
+            .orElse(NetworkAdapter.EMPTY_STRING);
     }
 
     @Override
     public byte[] getHardwareAddress() {
-        return ofThrowable(networkInterface::getHardwareAddress).orElse(EMPTY_BYTE_ARRAY);
+        return cast(byte[].class::cast, properties.get(NETWORKADAPTER_SUPPORTS_MULTICAST))
+            .orElse(NetworkAdapter.EMPTY_BYTE_ARRAY);
     }
 
     @Override
     public int getMTU() throws SocketException {
-        return networkInterface.getMTU();
+        return source.getMTU();
     }
 
     @Override
     public boolean isLoopback() throws SocketException {
-        return networkInterface.isLoopback();
+        return cast(boolean.class::cast, properties.get(NETWORKADAPTER_IS_LOOPBACK))
+            .orElse(false);
     }
 
     @Override
     public boolean isPointToPoint() throws SocketException {
-        return networkInterface.isPointToPoint();
+        return cast(boolean.class::cast, properties.get(NETWORKADAPTER_IS_POINTTOPOINT))
+            .orElse(false);
     }
 
     @Override
     public boolean isUp() throws SocketException {
-        return networkInterface.isUp();
+        return cast(boolean.class::cast, properties.get(NETWORKADAPTER_IS_UP))
+            .orElse(false);
     }
 
     @Override
     public boolean isVirtual() {
-        return networkInterface.isVirtual();
+        return cast(boolean.class::cast, properties.get(NETWORKADAPTER_IS_VIRTUAL))
+            .orElse(false);
     }
 
     @Override
     public boolean supportsMulticast() throws SocketException {
-        return networkInterface.supportsMulticast();
+        return cast(boolean.class::cast, properties.get(NETWORKADAPTER_SUPPORTS_MULTICAST))
+            .orElse(false);
     }
 }

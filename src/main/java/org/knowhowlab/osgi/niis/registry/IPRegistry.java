@@ -17,13 +17,8 @@
 
 package org.knowhowlab.osgi.niis.registry;
 
-import org.knowhowlab.osgi.niis.utils.CIDR;
-import org.osgi.service.networkadapter.NetworkAdapter;
-
-import java.net.NetworkInterface;
-import java.util.List;
-
-import static org.knowhowlab.osgi.niis.utils.Functions.ofThrowable;
+import java.net.InetAddress;
+import java.util.Map;
 
 /**
  * @author dpishchukhin
@@ -34,13 +29,27 @@ public class IPRegistry {
     public static final String LAN_IP4_LOCAL_LINK_ADDRESSES_DEFAULT = "169.254.0.0/16";
     public static final String LAN_IP6_LOCAL_LINK_ADDRESSES_DEFAULT = "fe80::/10";
 
-    private List<CIDR> lanSubnets;
-    private List<CIDR> wanSubnets;
+    private Map<String, Rule<InetAddress>> types;
+    private Map<String, Rule<InetAddress>> scopes;
 
-    public String getType(NetworkInterface networkInterface) {
-        if (ofThrowable(networkInterface::isLoopback).orElse(false)) {
-            return NetworkAdapter.LAN;
+    private IPRegistry() {
+    }
+
+    public String getType(InetAddress inetAddress) {
+        return "LAN";
+    }
+
+    public String getScope(InetAddress inetAddress) {
+        return "GLOBAL";
+    }
+
+    public static class Builder {
+        public static IPRegistry rfc6890() {
+            // todo: add default rules
+            return new IPRegistry();
         }
-        return null;
+    }
+
+    private class Rule<T> {
     }
 }

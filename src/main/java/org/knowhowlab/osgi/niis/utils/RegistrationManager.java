@@ -17,101 +17,155 @@
 
 package org.knowhowlab.osgi.niis.utils;
 
-import org.knowhowlab.osgi.niis.impl.NetworkAdapterImpl;
-import org.knowhowlab.osgi.niis.model.RegistrationDTO;
-import org.osgi.framework.Constants;
+import org.knowhowlab.osgi.niis.impl.AbstractInstance;
+import org.osgi.dto.DTO;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.networkadapter.NetworkAdapter;
 
-import java.net.NetworkInterface;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.knowhowlab.osgi.niis.utils.CompareUtils.deepEquals;
-import static org.knowhowlab.osgi.niis.utils.NetworkProperties.read;
+import static org.osgi.framework.Constants.SERVICE_PID;
 
 /**
  * @author dpishchukhin
  */
-public class RegistrationManager {
-    private Map<String, RegistrationDTO<NetworkAdapter>> networkAdapterRegistrations = new HashMap<>();
+public class RegistrationManager<T, R, U extends AbstractInstance> {
+    private Map<String, RegistrationDTO<R, U>> registrations = new HashMap<>();
 
-    private Functions.TriFunction<Class<NetworkAdapter>,
-        NetworkAdapter, Dictionary,
-        ServiceRegistration<NetworkAdapter>> networkAdapterRegisterFunction;
+    private Class<R> registrationClass;
+    private PropertiesCollector<T> propertiesCollector;
+    private Function<T, String> idFunction;
+    private BiFunction<T, Map<String, Object>, U> newInstanceFunction;
+    private Functions.TriFunction<Class<R>, U, Dictionary, ServiceRegistration<R>> registrationFunction;
 
-    public RegistrationManager(
-        Functions.TriFunction<Class<NetworkAdapter>,
-            NetworkAdapter,
-            Dictionary,
-            ServiceRegistration<NetworkAdapter>> networkAdapterRegisterFunction) {
-        this.networkAdapterRegisterFunction = networkAdapterRegisterFunction;
+    private RegistrationManager(Class<R> registrationClass,
+                               PropertiesCollector<T> propertiesCollector,
+                               Function<T, String> idFunction,
+                               BiFunction<T, Map<String, Object>, U> newInstanceFunction,
+                               Functions.TriFunction<Class<R>, U, Dictionary, ServiceRegistration<R>> registrationFunction) {
+        this.registrationClass = registrationClass;
+        this.propertiesCollector = propertiesCollector;
+        this.idFunction = idFunction;
+        this.newInstanceFunction = newInstanceFunction;
+        this.registrationFunction = registrationFunction;
     }
 
-    public void updateServices(Enumeration<NetworkInterface> networkInterfaces) {
+    public void updateServices(List<T> instances) {
         // collect network interfaces from java
-        Map<String, NetworkInterface> actualInterfaces = Collections.list(networkInterfaces)
-            .stream().collect(Collectors.toMap(NetworkInterface::getName, Function.identity()));
+        Map<String, T> actualSources = instances.stream().collect(Collectors.toMap(idFunction, Function.identity()));
 
-        unregisterObsoleteServices(actualInterfaces);
+        unregisterObsoleteServices(actualSources);
 
-        registerNewServices(actualInterfaces);
+        registerNewServices(actualSources);
 
-        updateExistingServices(actualInterfaces);
+        updateExistingServices(actualSources);
     }
 
-    private void updateExistingServices(Map<String, NetworkInterface> actualInterfaces) {
+    public void close() {
+        registrations.values()
+            .forEach(dto -> dto.serviceRegistration.unregister());
+        registrations.clear();
+    }
+
+    Map<String, RegistrationDTO<R, U>> getRegistrations() {
+        return registrations;
+    }
+
+    private void updateExistingServices(Map<String, T> actualInstances) {
         // find services that should be updated
-        HashSet<String> candidatesToUpdate = new HashSet<>(actualInterfaces.keySet());
-        candidatesToUpdate.retainAll(networkAdapterRegistrations.keySet());
+        HashSet<String> candidatesToUpdate = new HashSet<>(actualInstances.keySet());
+        candidatesToUpdate.retainAll(registrations.keySet());
         //noinspection SuspiciousMethodCalls
         candidatesToUpdate
             .stream()
-            .map(actualInterfaces::get)
-            .map(NetworkProperties::read)
-            .filter(m -> !deepEquals(m, networkAdapterRegistrations.get(m.get(Constants.SERVICE_PID)).properties))
+            .map(actualInstances::get)
+            .map(propertiesCollector::collect)
+            .filter(m -> !deepEquals(m, registrations.get(m.get(SERVICE_PID)).properties))
             .forEach(m -> {
                 //noinspection SuspiciousMethodCalls
-                RegistrationDTO<NetworkAdapter> dto = networkAdapterRegistrations.get(m.get(Constants.SERVICE_PID));
+                RegistrationDTO<R, U> dto = registrations.get(m.get(SERVICE_PID));
                 dto.serviceRegistration.setProperties(m);
                 dto.properties.clear();
                 dto.properties.putAll(m);
             });
     }
 
-    private void registerNewServices(Map<String, NetworkInterface> actualInterfaces) {
+    private void registerNewServices(Map<String, T> actualInstances) {
         // find services that should be registered
-        HashSet<String> candidatesToRegister = new HashSet<>(actualInterfaces.keySet());
-        candidatesToRegister.removeAll(networkAdapterRegistrations.keySet());
+        HashSet<String> candidatesToRegister = new HashSet<>(actualInstances.keySet());
+        candidatesToRegister.removeAll(registrations.keySet());
         // register
         candidatesToRegister
             .stream()
-            .map(actualInterfaces::remove)
-            .map(networkInterface -> {
-                Hashtable<String, Object> props = read(networkInterface);
-                NetworkAdapterImpl instance = new NetworkAdapterImpl(networkInterface,
-                    () -> (String) props.get(NetworkAdapter.NETWORKADAPTER_TYPE));
-                ServiceRegistration<NetworkAdapter> registration = networkAdapterRegisterFunction.apply(NetworkAdapter.class, instance, props);
-                return new RegistrationDTO<>(instance, registration, props);
+            .map(actualInstances::remove)
+            .map(source -> {
+                Hashtable<String, Object> props = propertiesCollector.collect(source);
+                U newInstance = newInstanceFunction.apply(source, props);
+                ServiceRegistration<R> registration = registrationFunction.apply(registrationClass, newInstance, props);
+                return new RegistrationDTO<>(newInstance, registration, props);
             })
-            .forEach(r -> networkAdapterRegistrations.put(r.instance.getName(), r));
+            .forEach(r -> registrations.put(r.instance.getId(), r));
     }
 
-    private void unregisterObsoleteServices(Map<String, NetworkInterface> actualInterfaces) {
+    private void unregisterObsoleteServices(Map<String, T> actualInstances) {
         // find services that should be unregistered
-        HashSet<String> candidatesToUnregister = new HashSet<>(networkAdapterRegistrations.keySet());
-        candidatesToUnregister.removeAll(actualInterfaces.keySet());
+        HashSet<String> candidatesToUnregister = new HashSet<>(registrations.keySet());
+        candidatesToUnregister.removeAll(actualInstances.keySet());
         // unregister
         candidatesToUnregister
             .stream()
-            .map(networkAdapterRegistrations::remove)
+            .map(registrations::remove)
             .forEach(r -> r.serviceRegistration.unregister());
     }
 
-    public void close() {
-        networkAdapterRegistrations.values()
-            .forEach(dto -> dto.serviceRegistration.unregister());
-        networkAdapterRegistrations.clear();
+    public static class Builder<T, R, U extends AbstractInstance> {
+        private Functions.TriFunction<Class<R>, U, Dictionary, ServiceRegistration<R>> registrationFunction;
+        private PropertiesCollector<T> propertiesCollector;
+        private Function<T, String> idFunction;
+        private BiFunction<T, Map<String, Object>, U> newInstanceFunction;
+        private Class<R> registrationClass;
+
+        public Builder(Class<R> registrationClass) {
+            this.registrationClass = registrationClass;
+        }
+
+        public Builder<T, R, U> withRegistrationFunction(Functions.TriFunction<Class<R>, U, Dictionary, ServiceRegistration<R>> registrationFunction) {
+            this.registrationFunction = registrationFunction;
+            return this;
+        }
+
+        public Builder<T, R, U> withPropertiesCollector(PropertiesCollector<T> propertiesCollector) {
+            this.propertiesCollector = propertiesCollector;
+            return this;
+        }
+
+        public Builder<T, R, U> withIdFunction(Function<T, String> idFunction) {
+            this.idFunction = idFunction;
+            return this;
+        }
+
+        public Builder<T, R, U> withNewInstanceFunction(BiFunction<T, Map<String, Object>, U> newInstanceFunction) {
+            this.newInstanceFunction = newInstanceFunction;
+            return this;
+        }
+
+        public RegistrationManager<T, R, U> build() {
+            return new RegistrationManager<>(registrationClass, propertiesCollector, idFunction, newInstanceFunction, registrationFunction);
+        }
+    }
+
+    static class RegistrationDTO<T, U extends AbstractInstance> extends DTO {
+        final U instance;
+        final ServiceRegistration<T> serviceRegistration;
+        final Hashtable<String, Object> properties;
+
+        RegistrationDTO(U instance, ServiceRegistration<T> serviceRegistration, Hashtable<String, Object> properties) {
+            this.instance = instance;
+            this.serviceRegistration = serviceRegistration;
+            this.properties = properties;
+        }
     }
 }

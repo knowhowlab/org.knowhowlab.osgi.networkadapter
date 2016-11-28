@@ -18,14 +18,12 @@
 package org.knowhowlab.osgi.niis.utils;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * @author dpishchukhin
  */
-public final class Functions {
-    private Functions() {
-    }
-
+public class Functions {
     public static <T> Optional<T> ofThrowable(SupplierWithException<T> supplier) {
         try {
             return Optional.ofNullable(supplier.get());
@@ -34,9 +32,35 @@ public final class Functions {
         }
     }
 
+    public static <T, R> Optional<R> ofThrowable(FunctionWithException<T, R> function, Supplier<T> supplier) {
+        try {
+            return Optional.ofNullable(function.apply(supplier.get()));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    public static <T> Optional<T> cast(CastFunction<T> function, Object value) {
+        try {
+            return Optional.ofNullable(function.apply(value));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    @FunctionalInterface
+    public interface CastFunction<T> {
+        T apply(Object value) throws Exception;
+    }
+
     @FunctionalInterface
     public interface SupplierWithException<T> {
         T get() throws Exception;
+    }
+
+    @FunctionalInterface
+    public interface FunctionWithException<T, R> {
+        R apply(T value) throws Exception;
     }
 
     @FunctionalInterface

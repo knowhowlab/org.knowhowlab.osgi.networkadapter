@@ -21,61 +21,62 @@ import org.osgi.service.networkadapter.NetworkAddress;
 
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
-import java.util.function.Supplier;
+import java.util.Map;
+
+import static org.knowhowlab.osgi.niis.utils.Functions.cast;
+import static org.osgi.service.networkadapter.NetworkAdapter.EMPTY_STRING;
 
 /**
  * @author dpishchukhin
  */
-public class NetworkAddressImpl implements NetworkAddress {
-    private InterfaceAddress address;
-    private final Supplier<String> networkAdapterTypeSupplier;
-    private final Supplier<String> networkAdapterPidSupplier;
-    private final Supplier<String> scopeSupplier;
+public class NetworkAddressImpl extends AbstractInstance<InterfaceAddress> implements NetworkAddress {
+    public NetworkAddressImpl(InterfaceAddress networkInterface, Map<String, Object> properties) {
+        super(networkInterface, properties);
+    }
 
-    public NetworkAddressImpl(InterfaceAddress address,
-                              Supplier<String> networkAdapterTypeSupplier,
-                              Supplier<String> networkAdapterPidSupplier,
-                              Supplier<String> scopeSupplier) {
-        this.address = address;
-        this.networkAdapterTypeSupplier = networkAdapterTypeSupplier;
-        this.networkAdapterPidSupplier = networkAdapterPidSupplier;
-        this.scopeSupplier = scopeSupplier;
+    @Override
+    public String getId() {
+        return getIpAddress();
     }
 
     @Override
     public String getNetworkAdapterType() {
-        return networkAdapterTypeSupplier.get();
+        return cast(String.class::cast, properties.get(NETWORKADAPTER_TYPE))
+            .orElse(EMPTY_STRING);
     }
 
     @Override
     public String getIpAddressVersion() {
-        return address.getAddress().getAddress().length == 4 ?
-            NetworkAddress.IPADDRESS_VERSION_4 :
-            NetworkAddress.IPADDRESS_VERSION_6;
+        return cast(String.class::cast, properties.get(IPADDRESS_VERSION))
+            .orElse(EMPTY_STRING);
     }
 
     @Override
     public String getIpAddressScope() {
-        return scopeSupplier.get();
+        return cast(String.class::cast, properties.get(IPADDRESS_SCOPE))
+            .orElse(EMPTY_STRING);
     }
 
     @Override
     public String getIpAddress() {
-        return address.getAddress().getHostName();
+        return cast(String.class::cast, properties.get(IPADDRESS))
+            .orElse(EMPTY_STRING);
     }
 
     @Override
     public InetAddress getInetAddress() {
-        return address.getAddress();
+        return source.getAddress();
     }
 
     @Override
     public int getSubnetMaskLength() {
-        return address.getNetworkPrefixLength();
+        return cast(int.class::cast, properties.get(SUBNETMASK_LENGTH))
+            .orElse(EMPTY_INTEGER);
     }
 
     @Override
     public String getNetworkAdapterPid() {
-        return networkAdapterPidSupplier.get();
+        return cast(String.class::cast, properties.get(NETWORKADAPTER_PID))
+            .orElse(EMPTY_STRING);
     }
 }
