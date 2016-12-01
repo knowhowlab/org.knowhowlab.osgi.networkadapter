@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 
 import static java.lang.Long.parseLong;
 import static java.util.Optional.ofNullable;
+import static org.knowhowlab.osgi.niis.utils.CIDR.isIPv4;
 import static org.knowhowlab.osgi.niis.utils.Functions.ofThrowable;
 import static org.osgi.framework.Constants.SERVICE_PID;
 import static org.osgi.service.networkadapter.NetworkAdapter.*;
@@ -65,7 +66,7 @@ public class Activator implements BundleActivator {
         networkInterfaceRegistrationManager = createNetworkInterfaceManager(bc::registerService);
         interfaceAddressRegistrationManager = createInterfaceAddressManager(bc::registerService);
 
-        ipRegistry = IPRegistry.Builder.rfc6890();
+        ipRegistry = IPRegistry.rfc6890();
 
         // read props
         long refreshDelay = parseLong(ofNullable(bc.getProperty(REFRESH_DELAY_PROPERTY)).orElse(REFRESH_DELAY_DEFAULT));
@@ -83,7 +84,9 @@ public class Activator implements BundleActivator {
             .withPropertiesCollector(
                 new PropertiesCollector.Builder<NetworkInterface>()
                     .addProperty(NetworkAdapter.NETWORKADAPTER_TYPE,
-                        t -> ipRegistry.getType(t.getInterfaceAddresses().stream().findFirst().get().getAddress()))
+                        t -> ipRegistry.getType(t.getInterfaceAddresses().stream()
+                            .filter(a -> isIPv4(a.getAddress()))
+                            .findFirst().orElse(t.getInterfaceAddresses().get(0)).getAddress()))
                     .addProperty(NETWORKADAPTER_HARDWAREADDRESS,
                         NetworkInterface::getHardwareAddress, EMPTY_BYTE_ARRAY)
                     .addProperty(NETWORKADAPTER_NAME, NetworkInterface::getName)
@@ -122,9 +125,9 @@ public class Activator implements BundleActivator {
             .withNewInstanceFunction(NetworkAddressImpl::new)
             .withPropertiesCollector(
                 new PropertiesCollector.Builder<InterfaceAddress>()
-                    .addProperty(NetworkAddress.NETWORKADAPTER_TYPE, t -> ipRegistry.getType(t.getAddress()))
+                    .addProperty(NetworkAddress.NETWORKADAPTER_TYPE, t -> ipRegistry.getType(t.getAddress())) // FIXME: take from NA
                     .addProperty(IPADDRESS_VERSION,
-                        t -> t.getAddress().getAddress().length == 4 ? IPADDRESS_VERSION_4 : IPADDRESS_VERSION_6)
+                        t -> isIPv4(t.getAddress()) ? IPADDRESS_VERSION_4 : IPADDRESS_VERSION_6)
                     .addProperty(IPADDRESS_SCOPE, t -> ipRegistry.getScope(t.getAddress()))
                     .addProperty(IPADDRESS, t -> t.getAddress().getHostAddress())
                     .addProperty(SUBNETMASK_LENGTH, InterfaceAddress::getNetworkPrefixLength)
@@ -154,6 +157,7 @@ public class Activator implements BundleActivator {
                 .flatMap(n -> n.getInterfaceAddresses().stream())
                 .collect(Collectors.toList());
 
+            // todo: refactor: register address then adapter. unregister adapter then address
             interfaceAddressRegistrationManager.updateServices(interfaceAddresses);
             networkInterfaceRegistrationManager.updateServices(networkInterfaces);
         }

@@ -20,7 +20,6 @@ package org.knowhowlab.osgi.niis.utils;
 import org.junit.Test;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -40,7 +39,7 @@ public class CIDRTest {
         CIDR.of("192.168.0.1");
     }
 
-    @Test(expected = UnknownHostException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void of_UHE() throws Exception {
         CIDR.of("aaa.bbb.ccc.ddd/eee");
     }

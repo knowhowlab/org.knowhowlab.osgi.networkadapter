@@ -36,17 +36,20 @@ public class CIDR {
     /**
      * @param cidr
      * @return
-     * @throws UnknownHostException
      * @throws IllegalArgumentException
      * @throws NullPointerException
      */
-    public static CIDR of(String cidr) throws UnknownHostException {
+    public static CIDR of(String cidr) {
         if (cidr == null) {
             throw new NullPointerException("CIDR is null");
         } else if (!cidr.contains("/")) {
             throw new IllegalArgumentException("Invalid CIDR format");
         } else {
-            return new CIDR(cidr);
+            try {
+                return new CIDR(cidr);
+            } catch (UnknownHostException e) {
+                throw new IllegalArgumentException(e);
+            }
         }
     }
 
@@ -67,7 +70,7 @@ public class CIDR {
 
         ByteBuffer maskBuffer = ByteBuffer.allocate(length);
 
-        if (length == 4) {
+        if (isIPv4(inetAddress)) {
             maskBuffer.putInt(-1);
         } else {
             maskBuffer.putLong(-1L).putLong(-1L);
@@ -87,6 +90,10 @@ public class CIDR {
         this.startAddress = InetAddress.getByAddress(startIpArr);
         this.endAddress = InetAddress.getByAddress(endIpArr);
 
+    }
+
+    public static boolean isIPv4(InetAddress inetAddress) {
+        return inetAddress.getAddress().length == 4;
     }
 
     private byte[] toBytes(byte[] array, int targetSize) {
