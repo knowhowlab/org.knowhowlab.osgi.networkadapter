@@ -17,7 +17,7 @@
 
 package org.knowhowlab.osgi.niis;
 
-import org.knowhowlab.osgi.niis.utils.RegistrationManager;
+import org.knowhowlab.osgi.niis.registry.IPRegistry;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
@@ -35,24 +35,20 @@ import static org.knowhowlab.osgi.niis.utils.Functions.ofThrowable;
  * @author dpishchukhin
  */
 public class Activator implements BundleActivator {
-    public static final String REFRESH_DELAY_PROPERTY = "org.knowhowlab.osgi.niis.refresh_delay";
+    private static final String REFRESH_DELAY_PROPERTY = "org.knowhowlab.osgi.niis.refresh_delay";
 
-    public static final String REFRESH_DELAY_DEFAULT = String.valueOf(TimeUnit.SECONDS.toMillis(5));
+    private static final String REFRESH_DELAY_DEFAULT = String.valueOf(TimeUnit.SECONDS.toMillis(5));
 
-    private BundleContext bc;
     private ScheduledExecutorService pool;
-    private long refreshDelay;
 
-    private RegistrationManager manager;
+    private NetworkServicesRegistrationManager registrationManager;
 
     @Override
     public void start(BundleContext bc) throws Exception {
-        this.bc = bc;
-
-        manager = new RegistrationManager(bc::registerService);
+        registrationManager = new NetworkServicesRegistrationManager(bc::registerService, bc::registerService, IPRegistry.rfc6890());
 
         // read props
-        refreshDelay = parseLong(ofNullable(bc.getProperty(REFRESH_DELAY_PROPERTY)).orElse(REFRESH_DELAY_DEFAULT));
+        long refreshDelay = parseLong(ofNullable(bc.getProperty(REFRESH_DELAY_PROPERTY)).orElse(REFRESH_DELAY_DEFAULT));
 
         pool = Executors.newScheduledThreadPool(0);
         pool.scheduleWithFixedDelay(new NetworkMonitor(), 0, refreshDelay, TimeUnit.MILLISECONDS);
@@ -60,15 +56,16 @@ public class Activator implements BundleActivator {
 
     @Override
     public void stop(BundleContext bc) throws Exception {
-        manager.close();
         pool.shutdownNow();
+        registrationManager.close();
     }
 
     private class NetworkMonitor implements Runnable {
         @Override
         public void run() {
-            manager.updateServices(ofThrowable(NetworkInterface::getNetworkInterfaces)
-                .orElseGet(Collections::emptyEnumeration));
-       }
+            registrationManager.updateServices(Collections
+                .list(ofThrowable(NetworkInterface::getNetworkInterfaces)
+                .orElseGet(Collections::emptyEnumeration)));
+        }
     }
 }
