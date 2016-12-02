@@ -22,7 +22,9 @@ import org.osgi.dto.DTO;
 import org.osgi.framework.ServiceRegistration;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -41,20 +43,29 @@ public class RegistrationManager<T, R, U extends AbstractInstance> {
     private BiFunction<T, Map<String, Object>, U> newInstanceFunction;
     private Functions.TriFunction<Class<R>, U, Dictionary, ServiceRegistration<R>> registrationFunction;
 
+    private BiConsumer<T, U> newInstanceNotificationConsumer;
+    private Consumer<U> removeInstanceNotificationConsumer;
+    private Consumer<U> updateInstanceNotificationConsumer;
+
     private RegistrationManager(Class<R> registrationClass,
-                               PropertiesCollector<T> propertiesCollector,
-                               Function<T, String> idFunction,
-                               BiFunction<T, Map<String, Object>, U> newInstanceFunction,
-                               Functions.TriFunction<Class<R>, U, Dictionary, ServiceRegistration<R>> registrationFunction) {
+                                PropertiesCollector<T> propertiesCollector,
+                                Function<T, String> idFunction,
+                                BiFunction<T, Map<String, Object>, U> newInstanceFunction,
+                                Functions.TriFunction<Class<R>, U, Dictionary, ServiceRegistration<R>> registrationFunction,
+                                BiConsumer<T, U> newInstanceNotificationConsumer,
+                                Consumer<U> removeInstanceNotificationConsumer,
+                                Consumer<U> updateInstanceNotificationConsumer) {
         this.registrationClass = registrationClass;
         this.propertiesCollector = propertiesCollector;
         this.idFunction = idFunction;
         this.newInstanceFunction = newInstanceFunction;
         this.registrationFunction = registrationFunction;
+        this.newInstanceNotificationConsumer = newInstanceNotificationConsumer;
+        this.removeInstanceNotificationConsumer = removeInstanceNotificationConsumer;
+        this.updateInstanceNotificationConsumer = updateInstanceNotificationConsumer;
     }
 
     public void updateServices(List<T> instances) {
-        // collect network interfaces from java
         Map<String, T> actualSources = instances.stream().collect(Collectors.toMap(idFunction, Function.identity()));
 
         unregisterObsoleteServices(actualSources);
@@ -65,9 +76,7 @@ public class RegistrationManager<T, R, U extends AbstractInstance> {
     }
 
     public void close() {
-        registrations.values()
-            .forEach(dto -> dto.serviceRegistration.unregister());
-        registrations.clear();
+        updateServices(Collections.emptyList());
     }
 
     Map<String, RegistrationDTO<R, U>> getRegistrations() {
@@ -90,6 +99,8 @@ public class RegistrationManager<T, R, U extends AbstractInstance> {
                 dto.serviceRegistration.setProperties(m);
                 dto.properties.clear();
                 dto.properties.putAll(m);
+
+                updateInstanceNotificationConsumer.accept(dto.instance);
             });
     }
 
@@ -104,6 +115,7 @@ public class RegistrationManager<T, R, U extends AbstractInstance> {
             .map(source -> {
                 Hashtable<String, Object> props = propertiesCollector.collect(source);
                 U newInstance = newInstanceFunction.apply(source, props);
+                newInstanceNotificationConsumer.accept(source, newInstance);
                 ServiceRegistration<R> registration = registrationFunction.apply(registrationClass, newInstance, props);
                 return new RegistrationDTO<>(newInstance, registration, props);
             })
@@ -118,7 +130,10 @@ public class RegistrationManager<T, R, U extends AbstractInstance> {
         candidatesToUnregister
             .stream()
             .map(registrations::remove)
-            .forEach(r -> r.serviceRegistration.unregister());
+            .forEach(r -> {
+                removeInstanceNotificationConsumer.accept(r.instance);
+                r.serviceRegistration.unregister();
+            });
     }
 
     public static class Builder<T, R, U extends AbstractInstance> {
@@ -127,6 +142,9 @@ public class RegistrationManager<T, R, U extends AbstractInstance> {
         private Function<T, String> idFunction;
         private BiFunction<T, Map<String, Object>, U> newInstanceFunction;
         private Class<R> registrationClass;
+        private BiConsumer<T, U> newInstanceNotificationConsumer = (t, u) -> {};
+        private Consumer<U> removeInstanceNotificationConsumer = (u) -> {};
+        private Consumer<U> updateInstanceNotificationConsumer = (u) -> {};
 
         public Builder(Class<R> registrationClass) {
             this.registrationClass = registrationClass;
@@ -152,8 +170,26 @@ public class RegistrationManager<T, R, U extends AbstractInstance> {
             return this;
         }
 
+        public Builder<T, R, U> withNewInstanceNotificationConsumer(BiConsumer<T,  U> newInstanceNotificationConsumer) {
+            this.newInstanceNotificationConsumer = newInstanceNotificationConsumer;
+            return this;
+        }
+
+        public Builder<T, R, U> withRemoveInstanceNotificationConsumer(Consumer<U> removeInstanceNotificationConsumer) {
+            this.removeInstanceNotificationConsumer = removeInstanceNotificationConsumer;
+            return this;
+        }
+
+        public Builder<T, R, U> withUpdateInstanceNotificationConsumer(Consumer<U> updateInstanceNotificationConsumer) {
+            this.updateInstanceNotificationConsumer = updateInstanceNotificationConsumer;
+            return this;
+        }
+
         public RegistrationManager<T, R, U> build() {
-            return new RegistrationManager<>(registrationClass, propertiesCollector, idFunction, newInstanceFunction, registrationFunction);
+            return new RegistrationManager<>(registrationClass, propertiesCollector,
+                idFunction, newInstanceFunction, registrationFunction,
+                newInstanceNotificationConsumer, removeInstanceNotificationConsumer,
+                updateInstanceNotificationConsumer);
         }
     }
 

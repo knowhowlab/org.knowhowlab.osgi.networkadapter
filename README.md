@@ -13,7 +13,7 @@ org.knowhowlab.osgi.niis
 
 # 0.1
 
-- requires Java 6+
+- requires Java 8+
 - requires OSGi 6+
 - requires SLF4J 1.6+
 - exports package org.osgi.service.networkadapter;version="1.0"

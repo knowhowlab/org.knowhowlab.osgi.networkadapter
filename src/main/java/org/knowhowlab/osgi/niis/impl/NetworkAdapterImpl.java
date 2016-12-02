@@ -19,8 +19,10 @@ package org.knowhowlab.osgi.niis.impl;
 
 import org.osgi.service.networkadapter.NetworkAdapter;
 
+import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.List;
 import java.util.Map;
 
 import static org.knowhowlab.osgi.niis.utils.Functions.cast;
@@ -95,5 +97,9 @@ public class NetworkAdapterImpl extends AbstractInstance<NetworkInterface> imple
     public boolean supportsMulticast() throws SocketException {
         return cast(boolean.class::cast, properties.get(NETWORKADAPTER_SUPPORTS_MULTICAST))
             .orElse(false);
+    }
+
+    public List<InterfaceAddress> getInterfaceAddresses() {
+        return source.getInterfaceAddresses();
     }
 }

@@ -70,7 +70,7 @@ public class CIDR {
 
         ByteBuffer maskBuffer = ByteBuffer.allocate(length);
 
-        if (isIPv4(inetAddress)) {
+        if (Utils.isIPv4(inetAddress)) {
             maskBuffer.putInt(-1);
         } else {
             maskBuffer.putLong(-1L).putLong(-1L);
@@ -90,10 +90,6 @@ public class CIDR {
         this.startAddress = InetAddress.getByAddress(startIpArr);
         this.endAddress = InetAddress.getByAddress(endIpArr);
 
-    }
-
-    public static boolean isIPv4(InetAddress inetAddress) {
-        return inetAddress.getAddress().length == 4;
     }
 
     private byte[] toBytes(byte[] array, int targetSize) {
