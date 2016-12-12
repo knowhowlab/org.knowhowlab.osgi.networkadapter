@@ -5,9 +5,9 @@ org.knowhowlab.osgi.niis
 
 [Javadoc](https://osgi.org/javadoc/r6/residential/org/osgi/service/networkadapter/package-summary.html)
 
-[![Build Status](https://travis-ci.org/knowhowlab/org.knowhowlab.osgi.niis.svg?branch=master)](https://travis-ci.org/knowhowlab/org.knowhowlab.osgi.niis)
-[![Coverage Status](https://coveralls.io/repos/github/knowhowlab/org.knowhowlab.osgi.niis/badge.svg?branch=master)](https://coveralls.io/github/knowhowlab/org.knowhowlab.osgi.niis?branch=master)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.knowhowlab.osgi/niis/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/org.knowhowlab.osgi/niis/)
+[![Build Status](https://travis-ci.org/knowhowlab/org.knowhowlab.osgi.networkadapter.svg?branch=master)](https://travis-ci.org/knowhowlab/org.knowhowlab.osgi.networkadapter)
+[![Coverage Status](https://coveralls.io/repos/github/knowhowlab/org.knowhowlab.osgi.networkadapter/badge.svg?branch=master)](https://coveralls.io/github/knowhowlab/org.knowhowlab.osgi.networkadapter?branch=master)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.knowhowlab.osgi/networkadapter/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/org.knowhowlab.osgi/networkadapter/)
 
 ## Release Notes
 
