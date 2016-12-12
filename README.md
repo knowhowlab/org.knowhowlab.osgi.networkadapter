@@ -1,4 +1,4 @@
-org.knowhowlab.osgi.niis
+org.knowhowlab.osgi.networkadapter
 ========================
 
 ### 143. Network Interface Information Service Specification Implementation. 
