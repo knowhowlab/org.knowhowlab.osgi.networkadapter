@@ -3,6 +3,4 @@ script: mvn --quiet install -B -P it
 after_success:
   - mvn clean test jacoco:report coveralls:report
 jdk:
-  - openjdk6
-  - oraclejdk7
   - oraclejdk8
