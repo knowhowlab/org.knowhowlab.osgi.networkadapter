@@ -21,7 +21,7 @@
 
     <groupId>org.knowhowlab.osgi</groupId>
     <artifactId>networkadapter</artifactId>
-    <version>0.1</version>
+    <version>0.1.1-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <name>Network Interface Information Service</name>
@@ -52,7 +52,7 @@
         <connection>scm:git:git@github.com:knowhowlab/org.knowhowlab.osgi.networkadapter.git</connection>
         <url>scm:git:git@github.com:knowhowlab/org.knowhowlab.osgi.networkadapter.git</url>
         <developerConnection>scm:git:git@github.com:knowhowlab/org.knowhowlab.osgi.networkadapter.git</developerConnection>
-        <tag>0.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <mailingLists>
