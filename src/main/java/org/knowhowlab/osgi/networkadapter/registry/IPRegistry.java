@@ -31,7 +31,7 @@ import static org.osgi.service.networkadapter.NetworkAddress.*;
  * @author dpishchukhin
  */
 public class IPRegistry {
-    public static final String IPADDRESS_SCHOPE_OTHER = "OTHER";
+    public static final String IPADDRESS_SCOPE_OTHER = "OTHER";
     public static final String OTHER = "OTHER";
 
     private Map<String, List<CIDR>> types;
@@ -127,24 +127,24 @@ public class IPRegistry {
             // LINKED_SCOPED_UNICAST
             .entry(OTHER, IPADDRESS_SCOPE_LINKED_SCOPED_UNICAST, "fe80::/10") // Table 29: Linked-Scoped Unicast
             // Other scopes
-            .entry(OTHER, IPADDRESS_SCHOPE_OTHER, "192.0.0.0/24") // Table 7: IETF Protocol Assignments
-            .entry(OTHER, IPADDRESS_SCHOPE_OTHER, "192.0.0.0/29") // Table 8: DS-Lite
-            .entry(OTHER, IPADDRESS_SCHOPE_OTHER, "192.0.2.0/24") // Table 9: TEST-NET-1
-            .entry(OTHER, IPADDRESS_SCHOPE_OTHER, "192.88.99.0/24") // Table 10: 6to4 Relay Anycast
-            .entry(OTHER, IPADDRESS_SCHOPE_OTHER, "198.18.0.0/15") // Table 12: Network Interconnect Device Benchmark Testing
-            .entry(OTHER, IPADDRESS_SCHOPE_OTHER, "198.51.100.0/24") // Table 13: TEST-NET-2
-            .entry(OTHER, IPADDRESS_SCHOPE_OTHER, "203.0.113.0/24") // Table 14: TEST-NET-3
-            .entry(OTHER, IPADDRESS_SCHOPE_OTHER, "240.0.0.0/4") // Table 15: Reserved for Future Use
-            .entry(OTHER, IPADDRESS_SCHOPE_OTHER, "255.255.255.255/32") // Table 16: Limited Broadcast
-            .entry(OTHER, IPADDRESS_SCHOPE_OTHER, "64:ff9b::/96") // Table 19: IPv4-IPv6 Translation Address
-            .entry(OTHER, IPADDRESS_SCHOPE_OTHER, "::ffff:0:0/96") // Table 20: IPv4-Mapped Address
-            .entry(OTHER, IPADDRESS_SCHOPE_OTHER, "100::/64") // Table 21: Discard-Only Prefix
-            .entry(OTHER, IPADDRESS_SCHOPE_OTHER, "2001::/23") // Table 22: IETF Protocol Assignments
-            .entry(OTHER, IPADDRESS_SCHOPE_OTHER, "2001::/32") // Table 23: TEREDO
-            .entry(OTHER, IPADDRESS_SCHOPE_OTHER, "2001:2::/48") // Table 24: Benchmarking
-            .entry(OTHER, IPADDRESS_SCHOPE_OTHER, "2001:db8::/32") // Table 25: Documentation
-            .entry(OTHER, IPADDRESS_SCHOPE_OTHER, "2001:10::/28") // Table 26: ORCHID
-            .entry(OTHER, IPADDRESS_SCHOPE_OTHER, "2002::/16") // Table 27: 6to4
+            .entry(OTHER, IPADDRESS_SCOPE_OTHER, "192.0.0.0/24") // Table 7: IETF Protocol Assignments
+            .entry(OTHER, IPADDRESS_SCOPE_OTHER, "192.0.0.0/29") // Table 8: DS-Lite
+            .entry(OTHER, IPADDRESS_SCOPE_OTHER, "192.0.2.0/24") // Table 9: TEST-NET-1
+            .entry(OTHER, IPADDRESS_SCOPE_OTHER, "192.88.99.0/24") // Table 10: 6to4 Relay Anycast
+            .entry(OTHER, IPADDRESS_SCOPE_OTHER, "198.18.0.0/15") // Table 12: Network Interconnect Device Benchmark Testing
+            .entry(OTHER, IPADDRESS_SCOPE_OTHER, "198.51.100.0/24") // Table 13: TEST-NET-2
+            .entry(OTHER, IPADDRESS_SCOPE_OTHER, "203.0.113.0/24") // Table 14: TEST-NET-3
+            .entry(OTHER, IPADDRESS_SCOPE_OTHER, "240.0.0.0/4") // Table 15: Reserved for Future Use
+            .entry(OTHER, IPADDRESS_SCOPE_OTHER, "255.255.255.255/32") // Table 16: Limited Broadcast
+            .entry(OTHER, IPADDRESS_SCOPE_OTHER, "64:ff9b::/96") // Table 19: IPv4-IPv6 Translation Address
+            .entry(OTHER, IPADDRESS_SCOPE_OTHER, "::ffff:0:0/96") // Table 20: IPv4-Mapped Address
+            .entry(OTHER, IPADDRESS_SCOPE_OTHER, "100::/64") // Table 21: Discard-Only Prefix
+            .entry(OTHER, IPADDRESS_SCOPE_OTHER, "2001::/23") // Table 22: IETF Protocol Assignments
+            .entry(OTHER, IPADDRESS_SCOPE_OTHER, "2001::/32") // Table 23: TEREDO
+            .entry(OTHER, IPADDRESS_SCOPE_OTHER, "2001:2::/48") // Table 24: Benchmarking
+            .entry(OTHER, IPADDRESS_SCOPE_OTHER, "2001:db8::/32") // Table 25: Documentation
+            .entry(OTHER, IPADDRESS_SCOPE_OTHER, "2001:10::/28") // Table 26: ORCHID
+            .entry(OTHER, IPADDRESS_SCOPE_OTHER, "2002::/16") // Table 27: 6to4
 
             .build();
     }
