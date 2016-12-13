@@ -57,6 +57,14 @@
         <tag>HEAD</tag>
     </scm>
 
+    <mailingLists>
+        <mailingList>
+            <name>KnowHowLab OSGi bundles</name>
+            <post>knowhowlab-osgi-bundles@googlegroups.com</post>
+            <archive>https://groups.google.com/d/forum/knowhowlab-osgi-bundles</archive>
+        </mailingList>
+    </mailingLists>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <argLine/>
